@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/template}">
+<head>
+    <meta charset="UTF-8">
+    <title>Hóa đơn chi tiết</title>
+    <style>
+        label.error {
+            color: red;
+            margin-bottom: 0;
+        }
+    </style>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+</head>
+<body>
+<header layout:fragment="header" class="mt-3 ml-2 mr-2">
+    <script>
+        $(document).ready(function () {
+            $('body').append('<div style="" id="loadingDiv"><div class="loader"></div></div>');
+            $(document).ajaxStart(function () {
+                $('#loadingDiv').show();
+            }).ajaxStop(function () {
+                $('#loadingDiv').remove();
+            });
+            $("#maKH").focus();
+            layDonGiaByMDSD();
+            showDSHoaDon();
+            layMaKH();
+            layMaThang();
+        });
+    </script>
+    <script th:src="@{/js_templates/hoaDon.js}"></script>
+</header>
+<section class="container-fluid" layout:fragment="content_body">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <form id="form_tim_hoa_don">
+                    <div class="card-header header-elements-inline">
+                        <div class="d-flex align-items-end flex-nowrap flex-xl-nowrap">
+                            <span class="mr-2">Tìm hóa đơn:</span>
+                            <div class="ui-widget">
+                                <input id="maKH" name="maKH" style="border: 1px solid #ddd; text-align: center"
+                                       placeholder="Mã KH">
+                                <label class="error"></label>
+                            </div>
+                            <div class="ui-widget ml-1">
+                                <input id="maThang" name="maThang" style="border: 1px solid #ddd; text-align: center"
+                                       placeholder="Mã tháng">
+                                <label class="error"></label>
+                            </div>
+                            <button data-toggle="tooltip" title="Tìm" class="btn btn-info center-block ml-1"
+                                    style="padding: 5px 5px 0 5px; border-radius: 10px"><i class="icon-search4"
+                                                                                           style="margin-bottom: 2px;"></i>
+                            </button>
+                        </div>
+                        <div class="align-items-start d-flex" style="margin-left: 6%">
+                            <span class="mr-1 mt-1">Xuất dữ liệu</span>
+                            <div class="ui-widget">
+                                <button type="button" onclick="exportExcel()"
+                                        class="btn btn-outline alpha-success text-success-800 border-success-600 legitRipple"
+                                        style="padding: 4px 3px 4px 4px;">
+                                    <i class="icon-file-excel text-success" data-toggle="tooltip"
+                                       title="Xuất excell hóa đơn" style="font-size: 20px"></i>
+                                </button>
+                            </div>
+                            <div class="ui-widget ml-2">
+                                <button type="button" onclick="exportPdf()"
+                                        class="btn btn-outline alpha-warning text-warning-800 border-warning-600 legitRipple"
+                                        style="padding: 4px 3px 4px 4px;">
+                                    <i class="icon-file-pdf text-warning" data-toggle="tooltip"
+                                       title="Xuất pdf hóa đơn" style="font-size: 20px"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="align-items-start flex-nowrap flex-xl-nowrap" style="margin-right: 6%">
+                            <div class="ui-widget">
+                                <span class="mr-1">Tổng số điện:</span>
+                                <span class="font-weight-bold text-dark" id="tongSoDien"></span>
+                            </div>
+                            <div class="ui-widget">
+                                <span class="mr-1">Tổng tiền:</span>
+                                <span class="font-weight-bold text-dark" id="tongTien" style="color:red;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="dropdown-divider" style="border: 1px solid #ced3cf"></div>
+                <div class="card-body">
+                    <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper no-footer">
+                        <div class="datatable-scroll-wrap"
+                             style="overflow-y:scroll; max-height:500px; text-align: center;">
+                            <table class="table datatable-responsive dataTable no-footer dtr-inline"
+                                   id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                                <thead>
+                                <tr role="row">
+                                    <th>STT</th>
+                                    <th>Mã HD</th>
+                                    <th>Mã tháng</th>
+                                    <th>Mã KH</th>
+                                    <th width="13%">Tên</th>
+                                    <th>Địa chỉ</th>
+                                    <th>Số điện hiện tại</th>
+                                    <th>Số điện tháng trước</th>
+                                    <th>Số Kwh</th>
+                                    <th>Loại điện</th>
+                                    <th>Thuế</th>
+                                    <th>Tiền (Đồng)</th>
+                                    <th>Ngày tạo</th>
+                                </tr>
+                                </thead>
+                                <tbody id="bang_hoa_don">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="DownloadExcelFileModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Xuất dữ liệu ra file excel ?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="false">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body d-flex">
+                    <i class="icon-file-excel text-success mr-1 mt-1"></i><h5>Bill.xlxs</h5>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                    <a th:href="@{/download-bill-excel/bills.xlsx}">
+                        <button type="button" class="btn btn-primary"
+                                onclick="setTimeout(function () {$('#DownloadExcelFileModal').modal('hide')}, 300);">
+                            Tải xuống
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="DownloadPdfFileModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xuất dữ liệu ra file pdf ?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body d-flex">
+                    <i class="icon-file-excel text-warning mr-1 mt-1"></i><h5>Bill.pdf</h5>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                    <a th:href="@{/download-bill-pdf/bills.pdf}">
+                        <button type="button" class="btn btn-primary"
+                                onclick="setTimeout(function () {$('#DownloadPdfFileModal').modal('hide')}, 300);">Tải
+                            xuống
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

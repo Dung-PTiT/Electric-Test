@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/template}">
+<head>
+    <meta charset="UTF-8">
+    <title>Cập nhật số điện</title>
+    <style>
+        label.error {
+            color: red;
+            width: 200px;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+<header layout:fragment="header" class="mt-3 ml-2 mr-2">
+    <script>
+        $(document).ready(function () {
+            showDSSoDien();
+            showCustomerID();
+            hideInput();
+            $("#maThang_input").datepicker({
+                format: "mm/yyyy",
+                viewMode: "months",
+                minViewMode: "months",
+                autoclose: true,
+                beforeShow: function (input, inst) {
+                    var rect = input.getBoundingClientRect();
+                    setTimeout(function () {
+                        inst.dpDiv.css({top: rect.top + 40, left: rect.left + 0});
+                    }, 0);
+                }
+            });
+        });
+    </script>
+    <script th:src="@{/js_templates/capNhatSoDien.js}"></script>
+</header>
+<section class="container-fluid" layout:fragment="content_body">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- Horizontal form -->
+            <div class="card">
+                <div class="card-header header-elements-inline d-flex justify-content-center">
+                    <h5 class="card-title">Thông tin điện kế</h5>
+                </div>
+                <div class="dropdown-divider" style="border: 2px solid #ced3cf"></div>
+                <div class="card-body">
+                    <form id="form_them_so_dien">
+                        <div class="form-group row">
+                            <label class="col-lg-4 col-form-label">Mã KH</label>
+                            <div class="col-lg-8">
+                                <select class="form-control selectpicker" name="maKH_select" id="maKH_select"
+                                        onchange="getSoDienByCustomer(this.value)">
+                                    <option selected value="all">Mã KH</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-4 col-form-label" for="maThang_input">Tháng (<span class="text-danger">*</span>)</label>
+                            <div class="col-lg-8">
+                                <input id="maThang_input" type="text" class="form-control" name="maThang_input"
+                                       readonly>
+                                <label class="error"></label>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-4 col-form-label">Số cũ (<span class="text-danger">*</span>)</label>
+                            <div class="col-lg-8">
+                                <input id="chiSoCu_input" class="form-control" name="chiSoCu_input">
+                                <label class="error"></label>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-4 col-form-label">Số mới (<span class="text-danger">*</span>)</label>
+                            <div class="col-lg-8">
+                                <input id="chiSoMoi_input" class="form-control" name="chiSoMoi_input">
+                                <label class="error"></label>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="text-center">
+                            <button id="btn_them_so_dien" type="submit" class="btn btn-primary legitRipple" style="padding: 4px 4px 4px 4px">
+                                Thêm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- /horizotal form -->
+        </div>
+
+        <div class="col-md-9">
+            <!-- Vertical form -->
+            <div class="card" style="height: 550px!important;">
+                <div class="card-header header-elements-inline d-flex justify-content-center">
+                    <h5 class="card-title">Bảng thống điện kế</h5>
+                </div>
+                <div class="card-body">
+                    <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper no-footer">
+                        <div class="datatable-scroll-wrap"
+                             style="overflow-y:scroll; max-height:400px; text-align: center;">
+                            <table class="table datatable-responsive dataTable no-footer dtr-inline"
+                                   id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                                <thead>
+                                <tr role="row">
+                                    <th>STT</th>
+                                    <th style="padding-left: 0">Mã KH</th>
+                                    <th>Mã tháng</th>
+                                    <th>Chỉ số mới</th>
+                                    <th>Chỉ số cũ</th>
+                                    <th>Trạng thái</th>
+                                    <th>Tác vụ</th>
+                                </tr>
+                                </thead>
+                                <tbody id="bang_so_dien">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /vertical form -->
+        </div>
+    </div>
+    <div class="modal fade" id="modalCreatBillForm" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-end mr-3">
+                    <h5 class="modal-title">Thông tin hóa đơn</h5>
+                </div>
+                <div class="dropdown-divider" style="border: 1px solid #ced3cf"></div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="modal-body">
+                            <div class="modal-header" style="padding: 0!important; display: none">
+                                <h6 class="modal-title" style="margin-right: 0!important;">Mã ĐK:<label
+                                        id="maDK_modalCreatBillForm"
+                                        style="margin-left: 49px "></label></h6>
+                            </div>
+                            <div class="modal-header" style="padding: 0!important;">
+                                <h6 class="modal-title" style="margin-right: 0!important;">Mã KH:<label
+                                        id="maKH_modalCreatBillForm"
+                                        style="margin-left: 49px "></label></h6>
+                            </div>
+                            <div class="modal-header" style="padding: 0!important;">
+                                <h6 class="modal-title" style="margin-right: 0!important;">Mã tháng:<label
+                                        id="maThang_modalCreatBillForm"
+                                        style="margin-left: 32px "></label></h6>
+                            </div>
+                            <div class="modal-header" style="padding: 0!important;">
+                                <h6 class="modal-title" style="margin-right: 0!important;">Chỉ số mới:<label
+                                        id="chiSoMoi_modalCreatBillForm"
+                                        style="margin-left: 25px "></label></h6>
+                            </div>
+                            <div class="modal-header" style="padding: 0!important;">
+                                <h6 class="modal-title" style="margin-right: 0!important;">Chỉ số cũ:<label
+                                        id="chiSoCu_modalCreatBillForm"
+                                        style="margin-left: 34px "></label></h6>
+                            </div>
+                            <div class="modal-header" style="padding: 0!important;">
+                                <h6 class="modal-title" style="margin-right: 0!important;">Số điện TT:<label
+                                        id="luongDienTT_modalCreatBillForm"
+                                        style="margin-left: 23px "></label> kWh</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="modal-body" style="padding: 0!important;">
+                            <div class="modal-header">
+                                <h6 class="modal-title" style="margin-right: 0!important;">Mã HD:<label
+                                        id="maHD_modalCreatBillForm" style="margin-left: 28px"></label></h6>
+                            </div>
+                            <div class="modal-header" style="padding: 0!important;">
+                                <h6 class="modal-title" style="margin-right: 0!important;">Loại điện:<label
+                                        id="loaiDienSuDung_modalCreatBillForm"
+                                        style="margin-left: 23px "></label></h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown-divider" style="border: 1px solid #ced3cf"></div>
+                <div class="modal-footer align-self-center">
+                    <button type="button" class="btn btn-info" onclick="taoHoaDon()"
+                            style="padding: 1px;color: black;">Thêm
+                    </button>
+                    <button type="button" class="btn btn-danger justify-content-end" data-dismiss="modal"
+                            style="padding: 1px;color: black;">Hủy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

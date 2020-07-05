@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/template}">
+<head>
+    <title>Danh sách khách hàng</title>
+    <style>
+        label.error {
+            color: red;
+            width: 200px;
+            position: absolute;
+        }
+
+        .dropdown-menu {
+            left: 30px !important;
+        }
+
+        .datepicker {
+            margin-left: 75px;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <header layout:fragment="header" class="mt-3 ml-2 mr-2">
+        <script>
+            $(document).ready(function () {
+                $('body').append('<div style="" id="loadingDiv"><div class="loader"></div></div>');
+                $(document).ajaxStart(function () {
+                    $('#loadingDiv').show();
+                }).ajaxStop(function () {
+                    $('#loadingDiv').remove();
+                });
+                showCustomerTable();
+                $("#dob_add").datepicker(
+                    {
+                        todayHighlight: true,
+                        format: 'dd/mm/yyyy',
+                        autoclose: true
+                    }
+                );
+                $("#ngayBDSD_add").datepicker(
+                    {
+                        todayHighlight: true,
+                        format: 'dd/mm/yyyy',
+                        autoclose: true
+                    }
+                );
+                $("#dob_edit").datepicker(
+                    {
+                        todayHighlight: true,
+                        format: 'dd/mm/yyyy',
+                        autoclose: true
+                    }
+                );
+                $("#ngayBDSD_edit").datepicker(
+                    {
+                        todayHighlight: true,
+                        format: 'dd/mm/yyyy',
+                        autoclose: true
+                    }
+                );
+                $("#customer_ID_search").focus();
+            });
+        </script>
+        <script th:src="@{/js_templates/danhSachKH.js}"></script>
+    </header>
+    <section class="container-fluid" layout:fragment="content_body">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header header-elements-inline" style="padding-bottom: 7px;">
+                        <div class="breadcrumb-elements-item dropdown p-0">
+                            <label class="breadcrumb-elements-item" aria-expanded="false">
+                                <i class="icon-arrow-right8 mr-2"></i>Tổng số khách hàng:
+                            </label>
+                            <label class="breadcrumb-elements-item ml-1" aria-expanded="false" id="soNguoiDung"></label>
+                            <button class="breadcrumb-elements-item dropdown p-0 ml-4" data-toggle="tooltip"
+                                    onclick="showCustomerTable()"
+                                    title="Xem danh sách khách hàng">
+                                <i class="icon-accessibility mr-1"></i><span class="mr-1">Xem danh sách</span>
+                            </button>
+                            <button onclick="showAddFormCustomer()" class="breadcrumb-elements-item dropdown p-0 ml-1"
+                                    data-toggle="tooltip" title="Thêm khách hàng">
+                                <i class="icon-plus-circle2"></i><span class="ml-1 mr-1">Thêm khách hàng</span>
+                            </button>
+                        </div>
+                        <form id="form_search_customer">
+                            <div class="d-flex align-items-end flex-nowrap flex-xl-nowrap"
+                                 style="margin-left: auto; margin-right: 60px">
+                                <label class="mr-2 mb-0" for="customer_ID_search">Tìm:</label>
+                                <div style="position: relative">
+                                    <input type="text" class="form-control text-dark flex-1 wmin-xl-100 border-bottom-1"
+                                           placeholder="Mã khách hàng"
+                                           style="text-align: center"
+                                           id="customer_ID_search" name="customer_ID_search">
+                                    <label class="error"></label>
+                                </div>
+                                <button data-toggle="tooltip" title="Tìm" class="btn btn-info center-block ml-1"
+                                        style="padding: 4px 4px 0 3px; border-radius: 10px"><i
+                                        class="icon-search4 mb-1"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="dropdown-divider" style="border: 1px solid #ced3cf"></div>
+                    <div>
+                        <div style="overflow-y:scroll; max-height: 500px;">
+                            <table class="table table-hover table-striped">
+                                <div class="overlay_bang_khach_hang"></div>
+                                <thead>
+                                <tr role="row" style="text-align: center">
+                                    <th>Mã</th>
+                                    <th width="13%">Tên</th>
+                                    <th>Ngày sinh</th>
+                                    <th>Số chứng minh nhân dân</th>
+                                    <th>Địa chỉ</th>
+                                    <th>Email</th>
+                                    <th>Giới tính</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Ngày sử dụng</th>
+                                    <th>Loại điện</th>
+                                    <th>Tác vụ</th>
+                                </tr>
+                                </thead>
+                                <tbody id="bang_khach_hang" sty>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <nav class="nav__add-customer">
+                        <ul class="nav__edit-list" style="padding-top: 16px">
+                            <li class="nav__edit-input">
+                                <i class="icon-users">
+                                    <span class="ml-3 mt-2"
+                                          style="font-size: 22px; color: #0f74a8;"
+                                          id="title_addUser">Thêm khách hàng</span></i>
+                                <i class="icon-close2" style="color: red; margin-top: 1px; margin-left: 260px;"
+                                   data-toggle="tooltip" title="Đóng" onclick="closeEditForm()"></i>
+                            </li>
+                            <hr>
+                            <form id="add_form">
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Mã (<span class="text-danger">*</span>)</label>
+                                    <input name="idKH_add_input" id="idKH_add_input"
+                                           style="border: 1px #ececec solid; margin-left: 58px; margin-right: 5px"
+                                           size="40">
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Tên (<span class="text-danger">*</span>)</label>
+                                    <input id="ten_add" name="ten_add"
+                                           style="border: 1px #ececec solid; margin-left: 56px; margin-right: 5px"
+                                           size="40">
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Ngày sinh (<span class="text-danger">*</span>)</label>
+                                    <input id="dob_add" name="dob_add" placeholder="Chọn ngày sinh"
+                                           style="border: 1px #ececec solid; margin-left: 20px; margin-right: 5px"
+                                           size="40" readonly>
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Số CMND (<span class="text-danger">*</span>)</label>
+                                    <input id="soCmnd_add" name="soCmnd_add"
+                                           style="border: 1px #ececec solid; margin-left: 22px; margin-right: 5px"
+                                           size="40">
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Địa chỉ (<span class="text-danger">*</span>)</label>
+                                    <textarea id="diaChi_add" name="diaChi_add"
+                                              style="border: 1px #ececec solid; margin-left: 41px; margin-right: 5px"
+                                              cols="40"
+                                              rows="2"></textarea>
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Email (<span class="text-danger">*</span>)</label>
+                                    <input id="mail_add" name="mail_add"
+                                           style="border: 1px #ececec solid; margin-left: 48px; margin-right: 5px"
+                                           size="40">
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Giới tính (<span class="text-danger">*</span>)</label>
+                                    <select id="gioiTinh_add"
+                                            style="margin-left: 33px;  border: 1px solid #dedede; margin-right: 5px; width: 265px">
+                                        <option value="0" selected disabled>Tùy chọn</option>
+                                        <option value="1">Nam</option>
+                                        <option value="2">Nữ</option>
+                                    </select>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Số điện thoại (<span class="text-danger">*</span>)</label>
+                                    <input id="sdt_add" name="sdt_add"
+                                           style="border: 1px #ececec solid; margin-left: 5px; margin-right: 5px"
+                                           size="40">
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Ngày sử dụng (<span class="text-danger">*</span>)</label>
+                                    <input id="ngayBDSD_add" name="ngayBDSD_add"
+                                           placeholder="Chọn ngày sử dụng"
+                                           style="border: 1px #ececec solid; margin-left: 1px; margin-right: 5px"
+                                           size="40"
+                                           readonly>
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Loại điện (<span class="text-danger">*</span>)</label>
+                                    <select id="MDSD_add"
+                                            style="margin-left: 28px; border: 1px solid #dedede; width: 265px">
+                                        <option value="0" selected disabled>Tùy chọn</option>
+                                        <option value="1">Sinh hoạt</option>
+                                        <option value="2">Sinh hoạt trả trước</option>
+                                    </select>
+                                </li>
+                                <hr>
+                                <a href="#" data-toggle="tooltip" title="Edit">
+                                    <button class="btn btn-info center-block mb-1" id="btn-add-user"
+                                            style="padding: 5px 5px 5px 5px; border-radius: 20px; margin-left: 140px;">
+                                        Thêm mới
+                                    </button>
+                                </a>
+                            </form>
+                        </ul>
+                    </nav>
+                    </form>
+                    <nav class="nav__edit-customer">
+                        <ul class="nav__edit-list" style="padding-top: 16px">
+                            <li class="nav__edit-input">
+                                <i class="icon-users">
+                                        <span class="ml-2 mt-2" style="font-size: 22px; color: #0f74a8"
+                                              id="title_editUser">Cập nhật thông tin khách hàng</span></i>
+                                <i class="icon-close2" style="color: red; margin-top: 1px; margin-left: 170px;"
+                                   data-toggle="tooltip" title="Đóng" onclick="closeEditForm()"></i>
+                            </li>
+                            <hr>
+                            <form id="edit_form">
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Mã (<span class="text-danger">*</span>)</label>
+                                    <input name="idKH_edit_input" id="idKH_edit_input"
+                                           style="border: 1px #ececec solid; margin-left: 58px; margin-right: 5px; background-color: #f4f4f4"
+                                           size="40" readonly>
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Tên (<span class="text-danger">*</span>)</label>
+                                    <input id="ten_edit" name="ten_edit"
+                                           style="border: 1px #ececec solid; margin-left: 56px; margin-right: 5px"
+                                           size="40">
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Ngày sinh (<span class="text-danger">*</span>)</label>
+                                    <input id="dob_edit" name="dob_edit" placeholder="Chọn ngày sinh"
+                                           style="border: 1px #ececec solid; margin-left: 20px; margin-right: 5px"
+                                           size="40" readonly>
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Số CMND (<span class="text-danger">*</span>)</label>
+                                    <input id="soCmnd_edit" name="soCmnd_edit"
+                                           style="border: 1px #ececec solid; margin-left: 22px; margin-right: 5px"
+                                           size="40">
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Địa chỉ (<span class="text-danger">*</span>)</label>
+                                    <textarea id="diaChi_edit" name="diaChi_edit"
+                                              style="border: 1px #ececec solid; margin-left: 41px; margin-right: 5px"
+                                              cols="40"
+                                              rows="2"></textarea>
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Email (<span class="text-danger">*</span>)</label>
+                                    <input id="mail_edit" name="mail_edit"
+                                           style="border: 1px #ececec solid; margin-left: 48px; margin-right: 5px"
+                                           size="40">
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Giới tính (<span class="text-danger">*</span>)</label>
+                                    <select id="gioiTinh_edit"
+                                            style="margin-left: 33px;  border: 1px solid #dedede; margin-right: 5px; width: 265px">
+                                        <option value="1">Nam</option>
+                                        <option value="2">Nữ</option>
+                                    </select>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Số điện thoại (<span class="text-danger">*</span>)</label>
+                                    <input id="sdt_edit" name="sdt_edit"
+                                           style="border: 1px #ececec solid; margin-left: 5px; margin-right: 5px"
+                                           size="40">
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Ngày sử dụng (<span class="text-danger">*</span>)</label>
+                                    <input id="ngayBDSD_edit" name="ngayBDSD_edit"
+                                           placeholder="Chọn ngày sử dụng"
+                                           style="border: 1px #ececec solid; margin-left: 1px; margin-right: 5px"
+                                           size="40"
+                                           readonly>
+                                    <label class="error"></label>
+                                </li>
+                                <li class="nav__edit-input" style=" padding-bottom: 5px">
+                                    <label>Loại điện (<span class="text-danger">*</span>)</label>
+                                    <select id="MDSD_edit"
+                                            style="margin-left: 28px; border: 1px solid #dedede; width: 265px">>
+                                        <option value="1">Sinh hoạt</option>
+                                        <option value="2">Sinh hoạt trả trước</option>
+                                    </select>
+                                </li>
+                                <li>
+                                    <hr>
+                                    <a href="#" data-toggle="tooltip" title="Edit">
+                                        <button class="btn btn-info center-block mb-1"
+                                                id="btn-edit-user"
+                                                style="padding: 5px 5px 5px 5px; border-radius: 20px; margin-left: 140px">
+                                            Cập nhật
+                                        </button>
+                                    </a>
+                                </li>
+                            </form>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <!--Start Modal send mail-->
+        <div class="modal fade alert" id="SendMailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button data-toggle="tooltip" title="Đóng" type="button" class="close"
+                                data-dismiss="modal"><span aria-hidden="true"
+                                                           style="margin-right: 62px;">x</span><span
+                                class="sr-only">Close</span></button>
+                        <h3 class="modal-title" id="lineModalLabel" style="margin-right: 198px!important;">Thông tin
+                            email</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label>Bên gửi: <span
+                                style="color: black; font-weight: bold; font-size: 16px">Electric Company</span></label>
+                        <br>
+                        <label>Bên nhận: <span id="mail_address_receive"
+                                               style="color: black; font-weight: bold; font-size: 16px; margin-right: 4px;"></span></label>
+                        <label>(<span id="name_customer_receive"
+                                      style="color: #47a4ff; font-weight: bold; font-size: 16px;"></span>)</label>
+                        <form id="form_sendMail">
+                            <label for="text_mail_subject">
+                                Tiêu đề: </label>
+                            <div style="position: relative">
+                                <input id="text_mail_subject" name="text_mail_subject"
+                                       style="margin-left: 2px; width: 475px; margin-right: 2px"
+                                       placeholder="Nhập tiêu đề mail">
+                                <label class="error"></label>
+                            </div>
+                            <label for="text_mail_content">
+                                Nội dung:
+                                <div style="position: relative">
+                                    <textarea id="text_mail_content" name="text_mail_content"></textarea><br>
+                                    <label class="text-danger" id="content_mail_error"></label>
+                                    <script>
+                                        CKEDITOR.replace('text_mail_content');
+                                    </script>
+                                </div>
+                            </label>
+                            <button data-toggle="tooltip" title="Gửi" type="submit" class="btn btn-primary center-block"
+                                    style="margin-left: 250px"
+                                    id="btn__modal-send">Gửi email
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <span id="id_KH_delete_td" style="display: none"></span>
+        <!--End Modal send mail-->
+    </section>
+</div>
+</body>
+</html>
