@@ -10,9 +10,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+//8 Tests
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class DonGiaDAOTest {
@@ -85,5 +87,19 @@ public class DonGiaDAOTest {
         donGiaTest.setGhiChu("Sinh hoạt");
         DonGia donGia = donGiaDAO.getDonGiaByMaDG(71);
         Assert.assertEquals(donGiaTest.toString(), donGia.toString());
+    }
+
+    @Test
+    public void getDonGiaAllTest() {
+        List<DonGia> donGiaList = donGiaDAO.getDonGiaAll();
+        List<DonGia> donGiaDAOListTest = new ArrayList<>();
+        donGiaDAOListTest.add(new DonGia(71, 1678, "Sinh hoạt"));
+        donGiaDAOListTest.add(new DonGia(72, 1734, "Sinh hoạt"));
+        donGiaDAOListTest.add(new DonGia(73, 2014, "Sinh hoạt"));
+        donGiaDAOListTest.add(new DonGia(74, 2536, "Sinh hoạt"));
+        donGiaDAOListTest.add(new DonGia(75, 2834, "Sinh hoạt"));
+        donGiaDAOListTest.add(new DonGia(76, 2927, "Sinh hoạt"));
+        donGiaDAOListTest.add(new DonGia(77, 2416, "Sinh hoạt trả trước"));
+        Assert.assertEquals(donGiaDAOListTest.toString(), donGiaList.toString());
     }
 }

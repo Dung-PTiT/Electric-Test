@@ -18,4 +18,6 @@ public interface DonGiaDAO {
     Integer getMaDG(Integer gia, String ghiChu);
 
     DonGia getDonGiaByMaDG(Integer maDG);
+
+    List<DonGia> getDonGiaAll();
 }

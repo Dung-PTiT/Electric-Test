@@ -10,6 +10,10 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.List;
+
+// 5 Tests
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class HoaDonDAOTest {
@@ -44,5 +48,26 @@ public class HoaDonDAOTest {
         hoaDonDAO.deleteHoaDon("0001-012020");
         boolean checkResult = utilsDAO.kiemTraTonTai("hoadon", "MaHD", "MaHD", "0001-012020");
         Assert.assertEquals(true, checkResult);
+    }
+
+    @Test
+    public void getMaKHTest() {
+        List<String> maKHList = hoaDonDAO.getMaKH();
+        List<String> maKHListTest = Arrays.asList("0001", "0002", "1221");
+        Assert.assertEquals(maKHListTest.toString(), maKHList.toString());
+    }
+
+    @Test
+    public void getMaThangTest() {
+        List<String> maThangList = hoaDonDAO.getMaThang();
+        List<String> maThangListTest = Arrays.asList("012020", "022020");
+        Assert.assertEquals(maThangListTest.toString(), maThangList.toString());
+    }
+
+    @Test
+    public void getMaHDByMaDKTest() {
+        String maHD = hoaDonDAO.getMaHDByMaDK("50");
+        String maHDTest =  "0001-012020";
+        Assert.assertEquals(maHDTest, maHD);
     }
 }

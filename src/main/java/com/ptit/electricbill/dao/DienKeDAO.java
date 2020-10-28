@@ -23,4 +23,6 @@ public interface DienKeDAO {
     Integer getStatusDienKe(Integer maDK);
 
     DienKe getDienKeByID(Integer id);
+
+    List<DienKe> getDienKeAll();
 }

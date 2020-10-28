@@ -42,6 +42,7 @@ public class UserDAOTest {
         listEx.add("0001");
         listEx.add("0002");
         listEx.add("1233");
+        listEx.add("1234");
         List<String> list = userDAO.getCustomerID();
         Assert.assertEquals(listEx.toString(), list.toString());
     }

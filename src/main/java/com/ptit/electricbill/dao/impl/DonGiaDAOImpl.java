@@ -9,7 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -82,5 +86,28 @@ public class DonGiaDAOImpl implements DonGiaDAO {
             }
         });
         return donGia;
+    }
+
+    @Override
+    public List<DonGia> getDonGiaAll() {
+        List<DonGia> donGiaList = new ArrayList<>();
+        org.hibernate.Session session = entityManager.unwrap(org.hibernate.Session.class);
+        session.doWork(new Work() {
+            @Override
+            public void execute(Connection con) throws SQLException {
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "SELECT * FROM dongia as d")) {
+                    ResultSet rs = stmt.executeQuery();
+                    while (rs.next()) {
+                        DonGia donGia = new DonGia();
+                        donGia.setMaDonGia(rs.getInt("MaDG"));
+                        donGia.setGia(rs.getInt("Gia"));
+                        donGia.setGhiChu(rs.getString("GhiChu"));
+                        donGiaList.add(donGia);
+                    }
+                }
+            }
+        });
+        return donGiaList;
     }
 }

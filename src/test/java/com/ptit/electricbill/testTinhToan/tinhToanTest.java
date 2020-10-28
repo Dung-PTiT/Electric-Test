@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Arrays;
 import java.util.List;
 
+// 1 Tests
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class tinhToanTest {
@@ -23,7 +24,6 @@ public class tinhToanTest {
         List<Integer> giaList = Arrays.asList(1678, 1734, 2014, 2536, 2834, 2927);
         String loaiDienSD = "Sinh hoạt";
         double thue = 0.1;
-//        System.out.println("99: "+ configController.tinhTien(giaList, 99, loaiDienSD, thue));
         Assert.assertEquals(0, configController.tinhTien(giaList, 0, loaiDienSD, thue));
         Assert.assertEquals(90444,configController.tinhTien(giaList, 49, loaiDienSD, thue));
         Assert.assertEquals(92290,configController.tinhTien(giaList, 50, loaiDienSD, thue));

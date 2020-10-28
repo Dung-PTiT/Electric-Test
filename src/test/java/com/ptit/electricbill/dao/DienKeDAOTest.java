@@ -1,6 +1,5 @@
 package com.ptit.electricbill.dao;
 
-import com.ptit.electricbill.database.DienKeService;
 import com.ptit.electricbill.model.DienKe;
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,6 +10,10 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
+// 9 Tests
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class DienKeDAOTest {
@@ -85,5 +88,17 @@ public class DienKeDAOTest {
         DienKe dienKeTest = new DienKe(50, "0001", "012020", 155, 0, 1);
         DienKe dienKe = dienKeDAO.getDienKeByID(50);
         Assert.assertEquals(dienKeTest.toString(), dienKe.toString());
+    }
+
+    @Test
+    public void getDienKeAllTest() {
+        List<DienKe> dienKeList = dienKeDAO.getDienKeAll();
+        List<DienKe> dienKeListTest = new ArrayList<>();
+        dienKeListTest.add(new DienKe(50, "0001", "012020", 155, 0, 1));
+        dienKeListTest.add(new DienKe(51, "0002", "012020", 300, 1, 1));
+        dienKeListTest.add(new DienKe(53, "1221", "012020", 1234, 1231, 1));
+        dienKeListTest.add(new DienKe(58, "0001", "022020", 300, 155, 1));
+        dienKeListTest.add(new DienKe(59, "0001", "032020", 400, 300, 0));
+        Assert.assertEquals(dienKeListTest.toString(), dienKeList.toString());
     }
 }

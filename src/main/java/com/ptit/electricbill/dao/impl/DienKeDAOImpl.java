@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -111,5 +112,31 @@ public class DienKeDAOImpl implements DienKeDAO {
             }
         });
         return dienKe;
+    }
+
+    @Override
+    public List<DienKe> getDienKeAll() {
+        List<DienKe> dienKeList = new ArrayList<>();
+        org.hibernate.Session session = entityManager.unwrap(org.hibernate.Session.class);
+        session.doWork(new Work() {
+            @Override
+            public void execute(Connection con) throws SQLException {
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "SELECT * FROM dienke as d")) {
+                    ResultSet rs = stmt.executeQuery();
+                    while (rs.next()) {
+                        DienKe dienKe = new DienKe();
+                        dienKe.setId(rs.getInt("id"));
+                        dienKe.setMaKH(rs.getString("MaKH"));
+                        dienKe.setMaThang(rs.getString("MaThang"));
+                        dienKe.setSoDienMoi(rs.getInt("SoDienMoi"));
+                        dienKe.setSoDienCu(rs.getInt("SoDienCu"));
+                        dienKe.setStatus(rs.getInt("Status"));
+                        dienKeList.add(dienKe);
+                    }
+                }
+            }
+        });
+        return dienKeList;
     }
 }
